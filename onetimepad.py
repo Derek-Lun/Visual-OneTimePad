@@ -62,10 +62,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-file', '-f', required=True, help='input file name')
     parser.add_argument('-o', action='store_true', default=False, help='generate an overlap image')
-    parser.add_argument('-x', action='store_true', default=False, help='generate a foldable image')
+    parser.add_argument('-x', action='store_true', default=False, help='generate a foldable image where folding the image in the middle result in the overlapped image')
     parser.add_argument('-a', action='store_true', default=False, help='generate an animated image')
     parser.add_argument('-A', action='store_true', default=False, help='generate all of the above')
-    parser.add_argument('-scale', type=int, default=1, help='scale image up/down by this factor')
+    parser.add_argument('-scale', type=int, default=1, help='scale image size up by this factor')
     parser.add_argument('-speed', type=float, default=0.05, help='length of each frame in seconds')
     args = parser.parse_args()
 

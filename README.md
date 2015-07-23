@@ -25,7 +25,7 @@ example to generate the animated output above: ``` python onetimepad.py -f examp
 | :-----------: |:------------:|
 |  -h, --help           |show help message|
 |  -o                   |generate an overlap image|
-|  -x                   |generate a foldable image where folding the image in the middle result in the overlapped result|
+|  -x                   |generate a foldable image where folding the image in the middle result in the overlapped image|
 |  -a                   |generate an animated image|
 |  -A                   |generate all of the above|
 |  -scale SCALE         |scale image size up by this factor|
