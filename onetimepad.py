@@ -2,10 +2,8 @@ from PIL import Image, ImageMath
 from array import *
 import os, sys, numpy
 
-
 def randomBit():
     return (ord(os.urandom(1)) >> 7) * 255
-
 
 def generateRandomArray(size):
     numOfPix = size[0]*size[1]
@@ -13,7 +11,6 @@ def generateRandomArray(size):
     for x in range(0, numOfPix):
         array[x] = randomBit()
     return array
-
 
 def generateRandomImage(randomArray, dimension):
     randomImage = numpy.zeros(dimension[0]*dimension[1]*4)
@@ -25,8 +22,7 @@ def generateRandomImage(randomArray, dimension):
         randomImage[(x/dimension[0])*dimension[0]*2 + dimension[0]*2 + x*2 + 1] = randomArray[x]
     return Image.fromarray(randomImage.reshape(newDimension).astype('uint8'))
 
-
-def generateEncodedImage(randomArray, original):
+def generatePadImage(randomArray, original):
     padImage = numpy.zeros(original.size[0]*original.size[1]*4)
     newDimension = (original.size[1]*2, original.size[0]*2)
     originalArray = list(original.getdata())
@@ -44,23 +40,26 @@ def main():
         print "Error when reading image file"
         return
 
-    print "Open file and convert to black and white"
+    print "Opening file and converting to black and white"
     original = original.convert('1')
 
-    print "Generate padding array"
+    print "Generating random array"
     randomArray = generateRandomArray(original.size)
 
-    print "Generate padding image"
+    file_name = os.path.splitext(sys.argv[1])[0]
+    file_ext = os.path.splitext(sys.argv[1])[1]
+
+    print "Generating front image"
     randomImage = generateRandomImage(randomArray, original.size)
-    randomImage.save(os.path.splitext(sys.argv[1])[0] + "_front" + os.path.splitext(sys.argv[1])[1])
+    randomImage.save(file_name + "_front" + file_ext)
 
-    print "Generate encoded image"
-    padImage = generateEncodedImage(randomArray, original)
-    padImage.save(os.path.splitext(sys.argv[1])[0] + "_back" + os.path.splitext(sys.argv[1])[1])
+    print "Generating back image"
+    padImage = generatePadImage(randomArray, original)
+    padImage.save(file_name + "_back" + file_ext)
 
-    out = ImageMath.eval("convert((a & b), 'L')", a=randomImage, b=padImage)
-    out.save(os.path.splitext(sys.argv[1])[0] + "_merged" + os.path.splitext(sys.argv[1])[1])
-    #out.show()
+    print "Generating merged image"
+    mergedImage = ImageMath.eval("convert((a & b), 'L')", a=randomImage, b=padImage)
+    mergedImage.save(file_name + "_merged" + file_ext)
 
 if __name__ == "__main__":
     main()
