@@ -30,6 +30,34 @@ def generate_pad_image(random_array, original):
         pad_image[(x/original.size[0])*original.size[0]*2 + original.size[0]*2 + x*2 + 1] = 255 if random_array[x] == originalArray[x] else 0
     return Image.fromarray(pad_image.reshape(newDimension).astype('uint8')).convert('1')
 
+def generate_animated_images_old(random_image, pad_image, scale_factor):
+    animated_images = []
+    for x in xrange (0, random_image.size[0], scale_factor):
+        temp_image = Image.new('1', random_image.size, "white")
+        temp_image.paste(random_image.crop((random_image.size[0] - x, 0, random_image.size[0], random_image.size[1])), (0,0))
+        animated_image = ImageMath.eval("convert((a & b), 'L')", a=temp_image, b=pad_image)
+        #animated_image.save(file_name + "_" + str(x) + file_ext)
+        animated_images.append(animated_image)
+    for x in xrange (0, random_image.size[0] + 1, scale_factor):
+        temp_image = Image.new('1', random_image.size, "white")
+        temp_image.paste(random_image.crop((0, 0, random_image.size[0] - x, random_image.size[1])), (x,0))
+        animated_image = ImageMath.eval("convert((a & b), 'L')", a=temp_image, b=pad_image)
+        #animated_image.save(file_name + "_" + str(x+random_image.size[0]) + file_ext)
+        animated_images.append(animated_image)
+    return animated_images
+
+def generate_animated_images(random_image, pad_image, scale_factor):
+    animated_images = []
+    for x in xrange (-scale_factor, random_image.size[0], scale_factor/2):
+        left_image = Image.new('1', (random_image.size[0]*2, random_image.size[1]), "white")
+        left_image.paste(random_image, (x, 0))
+        right_image = Image.new('1', (random_image.size[0]*2, random_image.size[1]), "white")
+        right_image.paste(pad_image, (random_image.size[0]-x, 0))
+        animated_image = ImageMath.eval("convert((a & b), 'L')", a=left_image, b=right_image)
+        #animated_image.save(str(x) + ".png")
+        animated_images.append(animated_image)
+    return animated_images
+
 def main():
     try:
         original = Image.open(sys.argv[1])
@@ -53,7 +81,6 @@ def main():
 
     random_image = random_image.resize((random_image.size[0]*scale_factor, random_image.size[1]*scale_factor), Image.NEAREST)
     random_image.save(file_name + "_front" + file_ext)
-
     pad_image = pad_image.resize((random_image.size[0], random_image.size[1]), Image.NEAREST)
     pad_image.save(file_name + "_back" + file_ext)
 
@@ -68,20 +95,7 @@ def main():
     foldable_image.save(file_name + "_foldable" + file_ext)
 
     print "Generating animated gif"
-    animated_images = []
-    for x in xrange (0, random_image.size[0], scale_factor):
-        temp_image = Image.new('1', random_image.size, "white")
-        temp_image.paste(random_image.crop((random_image.size[0] - x, 0, random_image.size[0], random_image.size[1])), (0,0))
-        animated_image = ImageMath.eval("convert((a & b), 'L')", a=temp_image, b=pad_image)
-        #animated_image.save(file_name + "_" + str(x) + file_ext)
-        animated_images.append(animated_image)
-    for x in xrange (0, random_image.size[0] + 1, scale_factor):
-        temp_image = Image.new('1', random_image.size, "white")
-        temp_image.paste(random_image.crop((0, 0, random_image.size[0] - x, random_image.size[1])), (x,0))
-        animated_image = ImageMath.eval("convert((a & b), 'L')", a=temp_image, b=pad_image)
-        #animated_image.save(file_name + "_" + str(x+random_image.size[0]) + file_ext)
-        animated_images.append(animated_image)
-    writeGif(file_name + "_animated.gif", animated_images, duration=2/3)
+    writeGif(file_name + "_animated.gif", generate_animated_images(random_image, pad_image, scale_factor), duration=2/3)
 
 if __name__ == "__main__":
     main()
