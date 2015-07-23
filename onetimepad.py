@@ -1,6 +1,6 @@
 from PIL import Image, ImageMath
 from images2gif import writeGif
-import os, sys, numpy
+import os, sys, numpy, argparse
 
 def generate_random_array(size):
     numOfPix = size[0]*size[1]
@@ -59,21 +59,31 @@ def generate_animated_images(random_image, pad_image, scale_factor):
     return animated_images
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-file', '-f', required=True, help='input file name')
+    parser.add_argument('-o', action='store_true', default=False, help='generate an overlap image')
+    parser.add_argument('-x', action='store_true', default=False, help='generate a foldable image')
+    parser.add_argument('-a', action='store_true', default=False, help='generate an animated image')
+    parser.add_argument('-A', action='store_true', default=False, help='generate all of the above')
+    parser.add_argument('-scale', type=float, default=2, help='scale image up/down by this factor')
+    parser.add_argument('-speed', type=float, default=0.05, help='length of each frame in seconds')
+    args = parser.parse_args()
+
     try:
-        original = Image.open(sys.argv[1])
+        original = Image.open(args.file)
     except:
         print "Error when reading image file"
         return
 
     print "Opening file and converting to black and white"
     original = original.convert('1')
-    scale_factor = 4
+
+    scale_factor = args.scale
+    file_name = os.path.splitext(args.file)[0]
+    file_ext = os.path.splitext(args.file)[1]
 
     print "Generating random array"
     random_array = generate_random_array(original.size)
-
-    file_name = os.path.splitext(sys.argv[1])[0]
-    file_ext = os.path.splitext(sys.argv[1])[1]
 
     print "Generating front and back image"
     random_image = generate_random_image(random_array, original.size)
@@ -84,18 +94,21 @@ def main():
     pad_image = pad_image.resize((random_image.size[0], random_image.size[1]), Image.NEAREST)
     pad_image.save(file_name + "_back" + file_ext)
 
-    print "Generating overlap image"
-    overlap_image = ImageMath.eval("convert((a & b), 'L')", a=random_image, b=pad_image)
-    overlap_image.save(file_name + "_merged" + file_ext)
+    if args.A or args.o:
+        print "Generating overlap image"
+        overlap_image = ImageMath.eval("convert((a & b), 'L')", a=random_image, b=pad_image)
+        overlap_image.save(file_name + "_merged" + file_ext)
 
-    print "Generating foldable image"
-    foldable_image = Image.new('1', (random_image.size[0]*2, random_image.size[1]))
-    foldable_image.paste(random_image.transpose(Image.FLIP_LEFT_RIGHT), (0,0))
-    foldable_image.paste(pad_image, (random_image.size[0],0))
-    foldable_image.save(file_name + "_foldable" + file_ext)
+    if args.A or args.x:
+        print "Generating foldable image"
+        foldable_image = Image.new('1', (random_image.size[0]*2, random_image.size[1]))
+        foldable_image.paste(random_image.transpose(Image.FLIP_LEFT_RIGHT), (0,0))
+        foldable_image.paste(pad_image, (random_image.size[0],0))
+        foldable_image.save(file_name + "_foldable" + file_ext)
 
-    print "Generating animated gif"
-    writeGif(file_name + "_animated.gif", generate_animated_images(random_image, pad_image, scale_factor), duration=2/3)
+    if args.A or args.a:
+        print "Generating animated gif"
+        writeGif(file_name + "_animated.gif", generate_animated_images(random_image, pad_image, scale_factor), duration=args.speed)
 
 if __name__ == "__main__":
     main()
