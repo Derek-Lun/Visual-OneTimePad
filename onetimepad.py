@@ -48,7 +48,7 @@ def generate_animated_images_old(random_image, pad_image, scale_factor):
 
 def generate_animated_images(random_image, pad_image, scale_factor):
     animated_images = []
-    for x in xrange (-scale_factor, random_image.size[0], scale_factor/2):
+    for x in xrange (-scale_factor, random_image.size[0], scale_factor):
         left_image = Image.new('1', (random_image.size[0]*2, random_image.size[1]), "white")
         left_image.paste(random_image, (x, 0))
         right_image = Image.new('1', (random_image.size[0]*2, random_image.size[1]), "white")
@@ -65,9 +65,13 @@ def main():
     parser.add_argument('-x', action='store_true', default=False, help='generate a foldable image')
     parser.add_argument('-a', action='store_true', default=False, help='generate an animated image')
     parser.add_argument('-A', action='store_true', default=False, help='generate all of the above')
-    parser.add_argument('-scale', type=float, default=2, help='scale image up/down by this factor')
+    parser.add_argument('-scale', type=int, default=1, help='scale image up/down by this factor')
     parser.add_argument('-speed', type=float, default=0.05, help='length of each frame in seconds')
     args = parser.parse_args()
+
+    scale_factor = args.scale
+    file_name = os.path.splitext(args.file)[0]
+    file_ext = os.path.splitext(args.file)[1]
 
     try:
         original = Image.open(args.file)
@@ -77,10 +81,8 @@ def main():
 
     print "Opening file and converting to black and white"
     original = original.convert('1')
-
-    scale_factor = args.scale
-    file_name = os.path.splitext(args.file)[0]
-    file_ext = os.path.splitext(args.file)[1]
+    #original_scaled = original.resize((original.size[0]*2*scale_factor, original.size[1]*2*scale_factor), Image.NEAREST)
+    #original_scaled.save(file_name + "_scaled" + file_ext)
 
     print "Generating random array"
     random_array = generate_random_array(original.size)
