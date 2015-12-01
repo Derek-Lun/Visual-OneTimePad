@@ -10,17 +10,6 @@ def generate_images(original_image):
         for y in range(0, original_image.size[1]):
             if original_image.getpixel((x, y)) == 0:
                 if ord(os.urandom(1)) > 127:
-                    front_image.putpixel((x * 2 + 0, y * 2 + 0), 255)
-                    front_image.putpixel((x * 2 + 0, y * 2 + 1), 0)
-                    front_image.putpixel((x * 2 + 1, y * 2 + 0), 0)
-                    front_image.putpixel((x * 2 + 1, y * 2 + 1), 255)
-
-                    back_image.putpixel((x * 2 + 0, y * 2 + 0), 0)
-                    back_image.putpixel((x * 2 + 0, y * 2 + 1), 255)
-                    back_image.putpixel((x * 2 + 1, y * 2 + 0), 255)
-                    back_image.putpixel((x * 2 + 1, y * 2 + 1), 0)
-
-                else:
                     front_image.putpixel((x * 2 + 0, y * 2 + 0), 0)
                     front_image.putpixel((x * 2 + 0, y * 2 + 1), 255)
                     front_image.putpixel((x * 2 + 1, y * 2 + 0), 255)
@@ -30,6 +19,16 @@ def generate_images(original_image):
                     back_image.putpixel((x * 2 + 0, y * 2 + 1), 0)
                     back_image.putpixel((x * 2 + 1, y * 2 + 0), 0)
                     back_image.putpixel((x * 2 + 1, y * 2 + 1), 255)
+                else:
+                    front_image.putpixel((x * 2 + 0, y * 2 + 0), 255)
+                    front_image.putpixel((x * 2 + 0, y * 2 + 1), 0)
+                    front_image.putpixel((x * 2 + 1, y * 2 + 0), 0)
+                    front_image.putpixel((x * 2 + 1, y * 2 + 1), 255)
+
+                    back_image.putpixel((x * 2 + 0, y * 2 + 0), 0)
+                    back_image.putpixel((x * 2 + 0, y * 2 + 1), 255)
+                    back_image.putpixel((x * 2 + 1, y * 2 + 0), 255)
+                    back_image.putpixel((x * 2 + 1, y * 2 + 1), 0)
             else:
                 if ord(os.urandom(1)) > 127:
                     front_image.putpixel((x * 2 + 0, y * 2 + 0), 255)
@@ -54,30 +53,30 @@ def generate_images(original_image):
                     back_image.putpixel((x * 2 + 1, y * 2 + 1), 0)
     return front_image, back_image
 
-def generate_animated_images_old(back_image, front_image, scale_factor):
+def generate_animated_images_old(front_image, back_image, scale_factor):
     animated_images = []
-    for x in xrange (0, back_image.size[0], scale_factor):
-        temp_image = Image.new('1', back_image.size, "white")
-        temp_image.paste(back_image.crop((back_image.size[0] - x, 0, back_image.size[0], back_image.size[1])), (0,0))
-        animated_image = ImageMath.eval("convert((a & b), 'L')", a=temp_image, b=front_image)
+    for x in xrange (0, front_image.size[0], scale_factor):
+        temp_image = Image.new('1', front_image.size, "white")
+        temp_image.paste(front_image.crop((front_image.size[0] - x, 0, front_image.size[0], front_image.size[1])), (0,0))
+        animated_image = ImageMath.eval("convert((a & b), 'L')", a=temp_image, b=back_image)
         #animated_image.save(file_name + "_" + str(x) + file_ext)
         animated_images.append(animated_image)
 
-    for x in xrange (0, back_image.size[0] + 1, scale_factor):
-        temp_image = Image.new('1', back_image.size, "white")
-        temp_image.paste(back_image.crop((0, 0, back_image.size[0] - x, back_image.size[1])), (x,0))
-        animated_image = ImageMath.eval("convert((a & b), 'L')", a=temp_image, b=front_image)
-        #animated_image.save(file_name + "_" + str(x+back_image.size[0]) + file_ext)
+    for x in xrange (0, front_image.size[0] + 1, scale_factor):
+        temp_image = Image.new('1', front_image.size, "white")
+        temp_image.paste(front_image.crop((0, 0, front_image.size[0] - x, front_image.size[1])), (x, 0))
+        animated_image = ImageMath.eval("convert((a & b), 'L')", a=temp_image, b=back_image)
+        #animated_image.save(file_name + "_" + str(x+front_image.size[0]) + file_ext)
         animated_images.append(animated_image)
     return animated_images
 
-def generate_animated_images(back_image, front_image, scale_factor):
+def generate_animated_images(front_image, back_image, scale_factor):
     animated_images = []
-    for x in xrange (-scale_factor, back_image.size[0], scale_factor):
-        left_image = Image.new('1', (back_image.size[0]*2, back_image.size[1]), "white")
-        left_image.paste(back_image, (x, 0))
-        right_image = Image.new('1', (back_image.size[0]*2, back_image.size[1]), "white")
-        right_image.paste(front_image, (back_image.size[0]-x, 0))
+    for x in xrange (-scale_factor, front_image.size[0], scale_factor):
+        left_image = Image.new('1', (front_image.size[0] * 2, front_image.size[1]), "white")
+        left_image.paste(front_image, (x, 0))
+        right_image = Image.new('1', (front_image.size[0] * 2, front_image.size[1]), "white")
+        right_image.paste(back_image, (front_image.size[0] - x, 0))
         animated_image = ImageMath.eval("convert((a & b), 'L')", a=left_image, b=right_image)
         #animated_image.save(str(x) + ".png")
         animated_images.append(animated_image)
@@ -106,32 +105,32 @@ def main():
 
     print "Opening file and converting to black and white"
     original_image = original_image.convert('1')
-    original_image_scaled = original_image.resize((original_image.size[0]*2*scale_factor, original_image.size[1]*2*scale_factor), Image.NEAREST)
-    original_image_scaled.save(file_name + "_scaled" + file_ext)
+    #original_image_scaled = original_image.resize((original_image.size[0] * 2 * scale_factor, original_image.size[1] * 2 * scale_factor), Image.NEAREST)
+    #original_image_scaled.save(file_name + "_scaled" + file_ext)
 
     print "Generating front and back image"
     front_image, back_image = generate_images(original_image)
 
-    back_image = back_image.resize((back_image.size[0]*scale_factor, back_image.size[1]*scale_factor), Image.NEAREST)
-    back_image.save(file_name + "_front" + file_ext)
-    front_image = front_image.resize((back_image.size[0], back_image.size[1]), Image.NEAREST)
-    front_image.save(file_name + "_back" + file_ext)
+    front_image = front_image.resize((front_image.size[0] * scale_factor, front_image.size[1] * scale_factor), Image.NEAREST)
+    front_image.save(file_name + "_front" + file_ext)
+    back_image = back_image.resize((front_image.size[0], front_image.size[1]), Image.NEAREST)
+    back_image.save(file_name + "_back" + file_ext)
 
     if args.A or args.o:
         print "Generating overlap image"
-        overlap_image = ImageMath.eval("convert((a & b), 'L')", a=back_image, b=front_image)
+        overlap_image = ImageMath.eval("convert((a & b), 'L')", a=front_image, b=back_image)
         overlap_image.save(file_name + "_merged" + file_ext)
 
     if args.A or args.x:
         print "Generating foldable image"
-        foldable_image = Image.new('1', (back_image.size[0]*2, back_image.size[1]))
-        foldable_image.paste(back_image.transpose(Image.FLIP_LEFT_RIGHT), (0,0))
-        foldable_image.paste(front_image, (back_image.size[0],0))
+        foldable_image = Image.new('1', (front_image.size[0]*2, front_image.size[1]))
+        foldable_image.paste(front_image.transpose(Image.FLIP_LEFT_RIGHT), (0, 0))
+        foldable_image.paste(back_image, (front_image.size[0], 0))
         foldable_image.save(file_name + "_foldable" + file_ext)
 
     if args.A or args.a:
         print "Generating animated gif"
-        writeGif(file_name + "_animated.gif", generate_animated_images(back_image, front_image, scale_factor), duration=args.speed)
+        writeGif(file_name + "_animated.gif", generate_animated_images(front_image, back_image, scale_factor), duration=args.speed)
 
 if __name__ == "__main__":
     main()
